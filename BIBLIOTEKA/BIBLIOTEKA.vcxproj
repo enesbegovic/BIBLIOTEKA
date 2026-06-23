@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{c5cb92d3-2371-427d-8d2e-6107f37f30a8}</ProjectGuid>
+    <ProjectGuid>{C5CB92D3-2371-427D-8D2E-6107F37F30A8}</ProjectGuid>
     <RootNamespace>BIBLIOTEKA</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

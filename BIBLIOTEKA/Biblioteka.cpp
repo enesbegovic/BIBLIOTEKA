@@ -84,6 +84,15 @@ void Biblioteka::PregledPosudbi() {
 		cout << posudba << endl;
 	}
 }
+bool Biblioteka::UkloniPosudbu(string isbn, string brojClanskeKarte) {
+	for (auto it = posudbe.begin(); it != posudbe.end(); ++it) {
+		if (it->GetISBNKnjige() == isbn && it->GetClanskaClana() == brojClanskeKarte) {
+			posudbe.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
 void Biblioteka::SacuvajBibliotekuUFajl() {
 	ofstream fajl("biblioteka.txt");
 	if (!fajl) {

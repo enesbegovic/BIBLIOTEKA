@@ -1,18 +1,4 @@
 Moja Biblioteka
-2
-Programiranje u C++
-Bjarne Stroustrup
-111-222-333
-Uvod u algoritme
-Thomas H. Cormen
-444-555-666
-2
-Marko Markovic
-12345
-Jelena Jovanovic
-67890
-1
-111-222-333
-12345
-1 6 2024
+0
+0
 0
