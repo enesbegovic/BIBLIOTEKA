@@ -16,3 +16,11 @@ ostream& operator<<(ostream& COUT, const Clan& c) {
 string Clan::GetBrojClanskeKarte()const {
 	return brojClanskeKarte;
 }
+void Clan::SacuvajClanaUFajl(ofstream& fajl) {
+	fajl << imePrezime << endl;
+	fajl << brojClanskeKarte << endl;
+}
+void Clan::UcitajClanaIzFajla(ifstream& fajl) {
+	getline(fajl, imePrezime);
+	getline(fajl, brojClanskeKarte);
+}

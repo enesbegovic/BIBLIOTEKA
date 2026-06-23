@@ -84,3 +84,57 @@ void Biblioteka::PregledPosudbi() {
 		cout << posudba << endl;
 	}
 }
+void Biblioteka::SacuvajBibliotekuUFajl() {
+	ofstream fajl("biblioteka.txt");
+	if (!fajl) {
+		cerr << "Greska pri otvaranju fajla za cuvanje!" << endl;
+		return;
+	}
+	fajl << naziv << endl;
+	fajl << knjige.size() << endl;
+	for (auto x1 : knjige) {
+		x1.second.SacuvajKnjiguUFajl(fajl);
+	}
+	fajl << clanovi.size() << endl;
+	for (auto x2 : clanovi) {
+		x2.second.SacuvajClanaUFajl(fajl);
+	}
+	fajl << posudbe.size() << endl;
+	for (auto posudba : posudbe) {
+		posudba.SacuvajPosudbuUFajl(fajl);
+	}
+	fajl.close();
+}
+void Biblioteka::UcitajBibliotekuIzFajla() {
+	ifstream fajl("biblioteka.txt");
+	if (!fajl) {
+		cerr << "Greska pri otvaranju fajla za ucitavanje!" << endl;
+		return;
+	}
+	getline(fajl, naziv);
+	int brojKnjiga;
+	fajl >> brojKnjiga;
+	fajl.ignore();
+	for (size_t i = 0; i < brojKnjiga; ++i) {
+		Knjiga k;
+		k.UcitajKnjiguIzFajla(fajl);
+		knjige[k.GetISBN()] = k;
+	}
+	int brojClanova;
+	fajl >> brojClanova;
+	fajl.ignore();
+	for (size_t i = 0; i < brojClanova; ++i) {
+		Clan c;
+		c.UcitajClanaIzFajla(fajl);
+		clanovi[c.GetBrojClanskeKarte()] = c;
+	}
+	int brojPosudbi;
+	fajl >> brojPosudbi;
+	fajl.ignore();
+	for (size_t i = 0; i < brojPosudbi; ++i) {
+		Posudba p;
+		p.UcitajPosudbuIzFajla(fajl);
+		posudbe.push_back(p);
+	}
+	fajl.close();
+}

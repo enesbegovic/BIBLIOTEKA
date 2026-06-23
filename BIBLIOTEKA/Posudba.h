@@ -19,4 +19,6 @@ public:
 	string GetClanskaClana()const;
 	Datum GetDatumPosudbe()const;
 	bool JeVracena()const;
+	void SacuvajPosudbuUFajl(ofstream& fajl);
+	void UcitajPosudbuIzFajla(ifstream& fajl);
 };

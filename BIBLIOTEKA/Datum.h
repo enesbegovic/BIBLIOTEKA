@@ -11,4 +11,6 @@ class Datum {
 public:
 	Datum(int d = 1, int m = 1, int g = 2000);
 	friend ostream& operator<<(ostream& COUT, const Datum& dat);
+	void SacuvajDatumUFajl(ofstream& fajl);
+	void UcitajDatumIzFajla(ifstream& fajl);
 };

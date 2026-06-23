@@ -17,3 +17,13 @@ ostream& operator<<(ostream& COUT, const Knjiga& k) {
 string Knjiga::GetISBN()const {
 	return ISBN;
 }
+void Knjiga::SacuvajKnjiguUFajl(ofstream& fajl) {
+	fajl << naslov << endl;
+	fajl << autor << endl;
+	fajl << ISBN << endl;
+}
+void Knjiga::UcitajKnjiguIzFajla(ifstream& fajl) {
+	getline(fajl, naslov);
+	getline(fajl, autor);
+	getline(fajl, ISBN);
+}

@@ -13,3 +13,10 @@ ostream& operator<<(ostream& COUT, const Datum& dat) {
 	COUT << dat.dan << "." << dat.mjesec << "." << dat.godina << endl;
 	return COUT;
 }
+void Datum::SacuvajDatumUFajl(ofstream& fajl) {
+	fajl << dan << " " << mjesec << " " << godina << endl;
+}
+void Datum::UcitajDatumIzFajla(ifstream& fajl) {
+	fajl >> dan >> mjesec >> godina;
+	fajl.ignore();
+}

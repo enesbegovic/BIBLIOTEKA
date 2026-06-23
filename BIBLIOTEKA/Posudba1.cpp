@@ -37,3 +37,22 @@ Datum Posudba::GetDatumPosudbe()const {
 bool Posudba::JeVracena()const {
 	return vracena;
 }
+void Posudba::SacuvajPosudbuUFajl(ofstream& fajl) {
+	fajl << isbnKnjige << endl;
+	fajl << clanskaClana << endl;
+	datumPosudbe.SacuvajDatumUFajl(fajl);
+	fajl << vracena << endl;
+	if (vracena) {
+		datumVracanja.SacuvajDatumUFajl(fajl);
+	}
+}
+void Posudba::UcitajPosudbuIzFajla(ifstream& fajl) {
+	getline(fajl, isbnKnjige);
+	getline(fajl, clanskaClana);
+	datumPosudbe.UcitajDatumIzFajla(fajl);
+	fajl >> vracena;
+	fajl.ignore();
+	if (vracena) {
+		datumVracanja.UcitajDatumIzFajla(fajl);
+	}
+}

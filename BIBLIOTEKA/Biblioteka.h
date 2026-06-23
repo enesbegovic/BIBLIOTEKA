@@ -24,4 +24,6 @@ public:
 	bool PosudiKnjigu(string isbn, string brojClanskeKarte, Datum datumPosudbe);
 	bool VratiKnjigu(string isbn, string brojClanskeKarte, Datum datumVracanja);
 	void PregledPosudbi();
+	void SacuvajBibliotekuUFajl();
+	void UcitajBibliotekuIzFajla();
 };

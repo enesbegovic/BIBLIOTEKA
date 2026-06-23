@@ -11,4 +11,6 @@ public:
 	Clan(string ip = "---", string bck = "---");
 	friend ostream& operator<<(ostream& COUT, const Clan& c);
 	string GetBrojClanskeKarte()const;
+	void SacuvajClanaUFajl(ofstream& fajl);
+	void UcitajClanaIzFajla(ifstream& fajl);
 };

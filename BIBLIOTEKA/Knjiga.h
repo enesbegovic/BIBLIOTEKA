@@ -11,4 +11,6 @@ public:
 	Knjiga(string n = "---", string a = "---", string isbn = "---");
 	friend ostream& operator<<(ostream& COUT, const Knjiga& k);
 	string GetISBN()const;
+	void SacuvajKnjiguUFajl(ofstream& fajl);
+	void UcitajKnjiguIzFajla(ifstream& fajl);
 };
