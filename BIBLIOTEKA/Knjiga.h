@@ -10,4 +10,5 @@ class Knjiga {
 public:
 	Knjiga(string n = "---", string a = "---", string isbn = "---");
 	friend ostream& operator<<(ostream& COUT, const Knjiga& k);
+	string GetISBN()const;
 };

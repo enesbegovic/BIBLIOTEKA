@@ -14,3 +14,6 @@ ostream& operator<<(ostream& COUT, const Knjiga& k) {
 	COUT << "ISBN: " << k.ISBN << endl;
 	return COUT;
 }
+string Knjiga::GetISBN()const {
+	return ISBN;
+}

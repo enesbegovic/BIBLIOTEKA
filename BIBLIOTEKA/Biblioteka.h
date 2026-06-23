@@ -17,4 +17,8 @@ class Biblioteka {
 public:
 	Biblioteka(string n = "---");
 	friend ostream& operator<<(ostream& COUT, const Biblioteka& b);
+	bool DodajKnjigu(Knjiga k);
+	bool DodajClana(Clan c);
+	bool UkloniKnjigu(string isbn);
+	bool UkloniClana(string brojClanskeKarte);
 };

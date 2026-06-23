@@ -13,3 +13,6 @@ ostream& operator<<(ostream& COUT, const Clan& c) {
 	COUT << "Broj Clanske Karte: " << c.brojClanskeKarte << endl;
 	return COUT;
 }
+string Clan::GetBrojClanskeKarte()const {
+	return brojClanskeKarte;
+}

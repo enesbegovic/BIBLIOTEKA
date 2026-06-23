@@ -28,3 +28,33 @@ ostream& operator<<(ostream& COUT, const Biblioteka& b) {
 	}
 	return COUT;
 }
+bool Biblioteka::DodajKnjigu(Knjiga k) {
+	if (knjige.find(k.GetISBN()) != knjige.end()) {
+		return false; 
+	}
+	knjige[k.GetISBN()] = k;
+	return true;
+}
+bool Biblioteka::DodajClana(Clan c) {
+	if (clanovi.find(c.GetBrojClanskeKarte()) != clanovi.end()) {
+		return false;
+	}
+	clanovi[c.GetBrojClanskeKarte()] = c;
+	return true;
+}
+bool Biblioteka::UkloniKnjigu(string isbn) {
+	auto it = knjige.find(isbn);
+	if (it != knjige.end()) {
+		knjige.erase(it);
+		return true;
+	}
+	return false;
+}
+bool Biblioteka::UkloniClana(string brojClanskeKarte) {
+	auto it = clanovi.find(brojClanskeKarte);
+	if (it != clanovi.end()) {
+		clanovi.erase(it);
+		return true;
+	}
+	return false;
+}
