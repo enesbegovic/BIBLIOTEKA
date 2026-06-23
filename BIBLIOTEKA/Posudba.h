@@ -15,4 +15,8 @@ class Posudba {
 public:
 	Posudba(string isbn = "---", string clanska = "---", Datum datPos = Datum(), bool vracena = false, Datum datVracanja = Datum());
 	friend ostream& operator<<(ostream& COUT, const Posudba& p);
+	string GetISBNKnjige()const;
+	string GetClanskaClana()const;
+	Datum GetDatumPosudbe()const;
+	bool JeVracena()const;
 };

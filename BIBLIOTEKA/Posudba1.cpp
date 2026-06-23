@@ -25,3 +25,15 @@ ostream& operator<<(ostream& COUT, const Posudba& p) {
 	}
 	return COUT;
 }
+string Posudba::GetISBNKnjige()const {
+	return isbnKnjige;
+}
+string Posudba::GetClanskaClana()const {
+	return clanskaClana;
+}
+Datum Posudba::GetDatumPosudbe()const {
+	return datumPosudbe;
+}
+bool Posudba::JeVracena()const {
+	return vracena;
+}

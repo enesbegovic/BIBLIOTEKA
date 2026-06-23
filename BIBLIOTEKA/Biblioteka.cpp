@@ -15,12 +15,12 @@ Biblioteka::Biblioteka(string n) {
 ostream& operator<<(ostream& COUT, const Biblioteka& b) {
 	COUT << "Naziv Biblioteke: " << b.naziv << endl;
 	COUT << "Knjige:" << endl;
-	for (const auto& x : b.knjige) {
-		COUT << x.second << endl;
+	for (const auto& x1 : b.knjige) {
+		COUT << x1.second << endl;
 	}
 	COUT << "Clanovi:" << endl;
-	for (const auto& x : b.clanovi) {
-		COUT << x.second << endl;
+	for (const auto& x2 : b.clanovi) {
+		COUT << x2.second << endl;
 	}
 	COUT << "Posudbe:" << endl;
 	for (const auto& posudba : b.posudbe) {
@@ -57,4 +57,30 @@ bool Biblioteka::UkloniClana(string brojClanskeKarte) {
 		return true;
 	}
 	return false;
+}
+bool Biblioteka::PosudiKnjigu(string isbn, string brojClanskeKarte, Datum datumPosudbe) {
+	if (knjige.find(isbn) == knjige.end() || clanovi.find(brojClanskeKarte) == clanovi.end()) {
+		return false;
+	}
+	for (const auto& posudba : posudbe) {
+		if (posudba.GetISBNKnjige() == isbn && !posudba.JeVracena()) {
+			return false;
+		}
+	}
+	posudbe.emplace_back(isbn, brojClanskeKarte, datumPosudbe, false);
+	return true;
+}
+bool Biblioteka::VratiKnjigu(string isbn, string brojClanskeKarte, Datum datumVracanja) {
+	for (auto& posudba : posudbe) {
+		if (posudba.GetISBNKnjige() == isbn && posudba.GetClanskaClana() == brojClanskeKarte && !posudba.JeVracena()) {
+			posudba = Posudba(isbn, brojClanskeKarte, posudba.GetDatumPosudbe(), true, datumVracanja);
+			return true;
+		}
+	}
+	return false;
+}
+void Biblioteka::PregledPosudbi() {
+	for (const auto& posudba : posudbe) {
+		cout << posudba << endl;
+	}
 }

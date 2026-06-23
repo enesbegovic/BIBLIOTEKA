@@ -21,4 +21,7 @@ public:
 	bool DodajClana(Clan c);
 	bool UkloniKnjigu(string isbn);
 	bool UkloniClana(string brojClanskeKarte);
+	bool PosudiKnjigu(string isbn, string brojClanskeKarte, Datum datumPosudbe);
+	bool VratiKnjigu(string isbn, string brojClanskeKarte, Datum datumVracanja);
+	void PregledPosudbi();
 };
