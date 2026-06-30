@@ -139,19 +139,23 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Baza.cpp" />
     <ClCompile Include="Biblioteka.cpp" />
     <ClCompile Include="Clan.cpp" />
     <ClCompile Include="Datum.cpp" />
     <ClCompile Include="Knjiga.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Posudba1.cpp" />
+    <ClCompile Include="sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Baza.h" />
     <ClInclude Include="Biblioteka.h" />
     <ClInclude Include="Clan.h" />
     <ClInclude Include="Datum.h" />
     <ClInclude Include="Knjiga.h" />
     <ClInclude Include="Posudba.h" />
+    <ClInclude Include="sqlite3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

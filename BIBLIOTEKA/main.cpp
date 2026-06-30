@@ -8,10 +8,13 @@
 #include "Datum.h"
 #include "Posudba.h"
 #include "Biblioteka.h"
+#include "Baza.h"
 using namespace std;
 int main() {
 	Biblioteka biblioteka;
 	biblioteka.UcitajBibliotekuIzFajla();
+	Baza baza;
+	baza.KreirajTabele();
 	int izbor;
 	do {
 		cout << "MENI IZBORNIKA:" << endl;
@@ -23,8 +26,9 @@ int main() {
 		cout << "6.Ukloni knjigu" << endl;
 		cout << "7.Ukloni clana" << endl;
 		cout << "8.Ukloni posudbu" << endl;
-		cout << "9.Pregled biblioteke" << endl;
-		cout << "10.Izlaz" << endl;
+		cout << "9.Pregled knjiga" << endl;
+		cout << "10.Pregled clanova" << endl;
+		cout << "11.Izlaz" << endl;
 		cin >> izbor;
 		cin.ignore();
 		switch (izbor) {
@@ -36,12 +40,11 @@ int main() {
 			getline(cin, autor);
 			cout << "Unesite ISBN: ";
 			getline(cin, isbn);
-			Knjiga k(naslov, autor, isbn);
-			if (biblioteka.DodajKnjigu(k)) {
+			if (baza.DodajKnjigu(naslov,autor,isbn)) {
 				cout << "Knjiga dodana." << endl;
 			}
 			else {
-				cout << "Knjiga sa istim ISBN vec postoji." << endl;
+				cout << "GRESKA PRI DODAVANJU!!!" << endl;
 			}
 			break;
 		}
@@ -51,12 +54,11 @@ int main() {
 			getline(cin, imePrezime);
 			cout << "Unesite broj clanske karte: ";
 			getline(cin, brojClanskeKarte);
-			Clan c(imePrezime, brojClanskeKarte);
-			if (biblioteka.DodajClana(c)) {
+			if (baza.DodajClana(imePrezime,brojClanskeKarte)) {
 				cout << "Clan dodan." << endl;
 			}
 			else {
-				cout << "Clan sa istim brojem clanske karte vec postoji." << endl;
+				cout << "GRESKA PRI DODAVANJU!!!" << endl;
 			}
 			break;
 		}
@@ -74,12 +76,12 @@ int main() {
 			cout << "Unesite godinu posudbe: ";
 			cin >> godina;
 			cin.ignore();
-			Datum datumPosudbe(dan, mjesec, godina);
-			if (biblioteka.PosudiKnjigu(isbn, brojClanskeKarte, datumPosudbe)) {
+			string datumPosudbeStr = to_string(dan) + "." + to_string(mjesec) + "." + to_string(godina);
+			if (baza.PosudiKnjigu(isbn,brojClanskeKarte,datumPosudbeStr)) {
 				cout << "Knjiga posudjena." << endl;
 			}
 			else {
-				cout << "Greska pri posudbi knjige." << endl;
+				cout << "GRESKA PRI POSUDBI!!!" << endl;
 			}
 			break;
 		}
@@ -97,28 +99,28 @@ int main() {
 			cout << "Unesite godinu vracanja: ";
 			cin >> godina;
 			cin.ignore();
-			Datum datumVracanja(dan, mjesec, godina);
-			if (biblioteka.VratiKnjigu(isbn, brojClanskeKarte, datumVracanja)) {
+			string datumVracanjaStr = to_string(dan) + "." + to_string(mjesec) + "." + to_string(godina);
+			if (baza.VratiKnjigu(isbn,brojClanskeKarte,datumVracanjaStr)) {
 				cout << "Knjiga vracena." << endl;
 			}
 			else {
-				cout << "Greska pri vracanju knjige." << endl;
+				cout << "GRESKA PRI VRACANJU KNJIGE!!!" << endl;
 			}
 			break;
 		}
 		case 5: {
-			biblioteka.PregledPosudbi();
+			baza.PregledPosudbi();
 			break;
 		}
 		case 6: {
 			string isbn;
 			cout << "Unesite ISBN knjige za uklanjanje: ";
 			getline(cin, isbn);
-			if (biblioteka.UkloniKnjigu(isbn)) {
+			if (baza.ObrisiKnjigu(isbn)) {
 				cout << "Knjiga uklonjena." << endl;
 			}
 			else {
-				cout << "Greska pri uklanjanju knjige." << endl;
+				cout << "GRESKA PRI UKLANJANJU KNJIGE!!!" << endl;
 			}
 			break;
 		}
@@ -126,11 +128,11 @@ int main() {
 			string brojClanskeKarte;
 			cout << "Unesite broj clanske karte za uklanjanje: ";
 			getline(cin, brojClanskeKarte);
-			if (biblioteka.UkloniClana(brojClanskeKarte)) {
+			if (baza.ObrisiClana(brojClanskeKarte)) {
 				cout << "Clan uklonjen." << endl;
 			}
 			else {
-				cout << "Greska pri uklanjanju clana." << endl;
+				cout << "GRESKA PRI UKLANJANJU CLANA!!!" << endl;
 			}
 			break;
 		}
@@ -140,19 +142,24 @@ int main() {
 			getline(cin, isbn);
 			cout << "Unesite broj clanske karte: ";
 			getline(cin, brojClanskeKarte);
-			if (biblioteka.UkloniPosudbu(isbn, brojClanskeKarte)) {
+			if (baza.UkloniPosudbu(isbn,brojClanskeKarte)) {
 				cout << "Posudba uklonjena." << endl;
 			}
 			else {
-				cout << "Greska pri uklanjanju posudbe." << endl;
+				cout << "GRESKA PRI UKLANJANJU POSUDBE!!!" << endl;
 			}
 			break;
 		}
 		case 9: {
-			cout << biblioteka << endl;
+			baza.PrikaziSveKnjige();
 			break;
 		}
-		case 10: {
+		case 10:
+		{
+			baza.PrikaziSveClanove();
+			break;
+		}
+		case 11: {
 			biblioteka.SacuvajBibliotekuUFajl();
 			cout << "DOVIDJENJE!" << endl;
 			break;
@@ -162,6 +169,6 @@ int main() {
 			break;
 		}
 		}
-	}while (izbor != 10);
+	}while (izbor != 11);
 	
 }
