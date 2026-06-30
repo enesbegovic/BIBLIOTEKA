@@ -8,6 +8,8 @@ public:
 	Baza();
 	~Baza();
 	void KreirajTabele();
+	bool PostaviInfoBiblioteke(string Naziv,string Adresa);
+	void PrikaziInfoBiblioteke();
 	bool DodajKnjigu(string naslov,string autor,string isbn);
 	bool ObrisiKnjigu(string isbn);
 	void PrikaziSveKnjige();

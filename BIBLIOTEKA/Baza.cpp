@@ -33,6 +33,42 @@ void Baza::KreirajTabele() {
 		"Vracena INTEGER DEFAULT 0,"
 		"DatumVracanja TEXT);";
 	sqlite3_exec(db, KreirajPosudbe.c_str(), nullptr, nullptr, &errMsg);
+
+	string KreirajInfoBiblioteke =
+		"CREATE TABLE IF NOT EXISTS InfoBiblioteke("
+		"ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+		"Naziv TEXT NOT NULL,"
+		"Adresa TEXT NOT NULL)";
+	sqlite3_exec(db, KreirajInfoBiblioteke.c_str(), nullptr, nullptr, &errMsg);
+}
+bool Baza::PostaviInfoBiblioteke(string Naziv, string Adresa) {
+	char* errMsg = nullptr;
+	int count = 0;
+	string Provjera =
+		"SELECT COUNT(*) FROM InfoBiblioteke WHERE Naziv='" + Naziv + "' AND Adresa='" + Adresa + "';";
+	sqlite3_exec(db, Provjera.c_str(),
+		[](void* data, int, char** podaci, char**) {
+			*(int*)data = atoi(podaci[0]);
+			return 0;
+		}, &count, nullptr);
+	if (count > 0)
+		return false;
+	string sql =
+		"INSERT INTO InfoBiblioteke (Naziv,Adresa) VALUES('"
+		+ Naziv + "', '" + Adresa + "');";
+	sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
+	return true;
+}
+void Baza::PrikaziInfoBiblioteke() {
+	string sql =
+		"SELECT * FROM InfoBiblioteke;";
+	sqlite3_exec(db, sql.c_str(),
+		[](void*, int kolone, char** podaci, char** nazivKolone) {
+			for (int i = 0; i < kolone; i++)
+				cout << nazivKolone[i] << ": " << podaci[i] << endl;
+			cout << "---" << endl;
+			return 0;
+		}, nullptr, nullptr);
 }
 bool Baza::DodajKnjigu(string naslov, string autor, string isbn) {
 	char* errMsg = nullptr;

@@ -1,20 +1,12 @@
 #include <iostream>
 #include <string>
-#include <map>
-#include <vector>
-#include <fstream>
-#include "Knjiga.h"
-#include "Clan.h"
-#include "Datum.h"
-#include "Posudba.h"
-#include "Biblioteka.h"
 #include "Baza.h"
 using namespace std;
 int main() {
-	Biblioteka biblioteka;
-	biblioteka.UcitajBibliotekuIzFajla();
 	Baza baza;
 	baza.KreirajTabele();
+	baza.PostaviInfoBiblioteke("GRADSKA BIBLIOTEKA MOSTAR", "BULEVAR BR.77");
+	baza.PrikaziInfoBiblioteke();
 	int izbor;
 	do {
 		cout << "MENI IZBORNIKA:" << endl;
@@ -160,7 +152,6 @@ int main() {
 			break;
 		}
 		case 11: {
-			biblioteka.SacuvajBibliotekuUFajl();
 			cout << "DOVIDJENJE!" << endl;
 			break;
 		}
