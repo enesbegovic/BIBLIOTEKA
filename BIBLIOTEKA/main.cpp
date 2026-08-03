@@ -13,14 +13,15 @@ int main() {
 		cout << "1.Dodaj knjigu" << endl;
 		cout << "2.Dodaj clana" << endl;
 		cout << "3.Posudi knjigu" << endl;
-		cout << "4.Vrati knjigu" << endl;
-		cout << "5.Pregled posudbi" << endl;
-		cout << "6.Ukloni knjigu" << endl;
-		cout << "7.Ukloni clana" << endl;
-		cout << "8.Ukloni posudbu" << endl;
-		cout << "9.Pregled knjiga" << endl;
-		cout << "10.Pregled clanova" << endl;
-		cout << "11.Izlaz" << endl;
+		cout << "4.Dodaj clana i posudi knjigu" << endl;
+		cout << "5.Vrati knjigu" << endl;
+		cout << "6.Pregled posudbi" << endl;
+		cout << "7.Ukloni knjigu" << endl;
+		cout << "8.Ukloni clana" << endl;
+		cout << "9.Ukloni posudbu" << endl;
+		cout << "10.Pregled knjiga" << endl;
+		cout << "11.Pregled clanova" << endl;
+		cout << "12.Izlaz" << endl;
 		cin >> izbor;
 		cin.ignore();
 		switch (izbor) {
@@ -32,35 +33,25 @@ int main() {
 			getline(cin, autor);
 			cout << "Unesite ISBN: ";
 			getline(cin, isbn);
-			if (baza.DodajKnjigu(naslov,autor,isbn)) {
-				cout << "Knjiga dodana." << endl;
-			}
-			else {
-				cout << "GRESKA PRI DODAVANJU!!!" << endl;
-			}
+			baza.DodajKnjigu(naslov, autor, isbn);
 			break;
 		}
 		case 2: {
 			string imePrezime, brojClanskeKarte;
-			cout << "Unesite ime i prezime clana: ";
+			cout << "Unesite ime i prezime: ";
 			getline(cin, imePrezime);
 			cout << "Unesite broj clanske karte: ";
 			getline(cin, brojClanskeKarte);
-			if (baza.DodajClana(imePrezime,brojClanskeKarte)) {
-				cout << "Clan dodan." << endl;
-			}
-			else {
-				cout << "GRESKA PRI DODAVANJU!!!" << endl;
-			}
+			baza.DodajClana(imePrezime, brojClanskeKarte);
 			break;
 		}
 		case 3: {
 			string isbn, brojClanskeKarte;
 			int dan, mjesec, godina;
-			cout << "Unesite ISBN knjige: ";
-			getline(cin, isbn);
 			cout << "Unesite broj clanske karte: ";
 			getline(cin, brojClanskeKarte);
+			cout << "Unesite ISBN knjige: ";
+			getline(cin, isbn);
 			cout << "Unesite dan posudbe: ";
 			cin >> dan;
 			cout << "Unesite mjesec posudbe: ";
@@ -68,22 +59,40 @@ int main() {
 			cout << "Unesite godinu posudbe: ";
 			cin >> godina;
 			cin.ignore();
-			string datumPosudbeStr = to_string(dan) + "." + to_string(mjesec) + "." + to_string(godina);
-			if (baza.PosudiKnjigu(isbn,brojClanskeKarte,datumPosudbeStr)) {
-				cout << "Knjiga posudjena." << endl;
-			}
-			else {
-				cout << "GRESKA PRI POSUDBI!!!" << endl;
-			}
+			string datumPosudbeISO = to_string(godina) + "-" + (mjesec < 10 ? "0" : "") + to_string(mjesec) + "-" + (dan < 10 ? "0" : "") + to_string(dan);
+			baza.PosudiKnjigu(brojClanskeKarte, isbn, datumPosudbeISO);
 			break;
 		}
-		case 4: {
+		case 4:
+		{
+			string ime;
+			cout << "Unesite ime i prezime: ";
+			getline(cin, ime);
+			string Clanska;
+			cout << "Unesite broj clasnke kartice: ";
+			getline(cin, Clanska);
+			string isbn;
+			cout << "Unesite isbn knjige: ";
+			getline(cin, isbn);
+			int dan, mjesec, godina;
+			cout << "Unesite dan posudbe: ";
+			cin >> dan;
+			cout << "Unesite mjesec posudbe: ";
+			cin >> mjesec;
+			cout << "Unesite godinu posudbe: ";
+			cin >> godina;
+			cin.ignore();
+			string datumPosudbeISO = to_string(godina) + "-" + (mjesec < 10 ? "0" : "") + to_string(mjesec) + "-" + (dan < 10 ? "0" : "") + to_string(dan);
+			baza.DodajClanaDodajPosudbu(ime, Clanska, isbn, datumPosudbeISO);
+			break;
+		}
+		case 5: {
 			string isbn, brojClanskeKarte;
 			int dan, mjesec, godina;
-			cout << "Unesite ISBN knjige: ";
-			getline(cin, isbn);
 			cout << "Unesite broj clanske karte: ";
 			getline(cin, brojClanskeKarte);
+			cout << "Unesite ISBN knjige: ";
+			getline(cin, isbn);
 			cout << "Unesite dan vracanja: ";
 			cin >> dan;
 			cout << "Unesite mjesec vracanja: ";
@@ -91,67 +100,47 @@ int main() {
 			cout << "Unesite godinu vracanja: ";
 			cin >> godina;
 			cin.ignore();
-			string datumVracanjaStr = to_string(dan) + "." + to_string(mjesec) + "." + to_string(godina);
-			if (baza.VratiKnjigu(isbn,brojClanskeKarte,datumVracanjaStr)) {
-				cout << "Knjiga vracena." << endl;
-			}
-			else {
-				cout << "GRESKA PRI VRACANJU KNJIGE!!!" << endl;
-			}
-			break;
-		}
-		case 5: {
-			baza.PregledPosudbi();
+			string datumVracanjaISO = to_string(godina) + "-" + (mjesec < 10 ? "0" : "") + to_string(mjesec) + "-" + (dan < 10 ? "0" : "") + to_string(dan);
+			baza.VratiKnjigu(brojClanskeKarte, isbn, datumVracanjaISO);
 			break;
 		}
 		case 6: {
-			string isbn;
-			cout << "Unesite ISBN knjige za uklanjanje: ";
-			getline(cin, isbn);
-			if (baza.ObrisiKnjigu(isbn)) {
-				cout << "Knjiga uklonjena." << endl;
-			}
-			else {
-				cout << "GRESKA PRI UKLANJANJU KNJIGE!!!" << endl;
-			}
+			baza.PregledPosudbi();
 			break;
 		}
 		case 7: {
-			string brojClanskeKarte;
-			cout << "Unesite broj clanske karte za uklanjanje: ";
-			getline(cin, brojClanskeKarte);
-			if (baza.ObrisiClana(brojClanskeKarte)) {
-				cout << "Clan uklonjen." << endl;
-			}
-			else {
-				cout << "GRESKA PRI UKLANJANJU CLANA!!!" << endl;
-			}
+			string isbn;
+			cout << "Unesite ISBN knjige za uklanjanje: ";
+			getline(cin, isbn);
+			baza.ObrisiKnjigu(isbn);
 			break;
 		}
 		case 8: {
-			string isbn, brojClanskeKarte;
-			cout << "Unesite ISBN knjige za uklanjanje: ";
-			getline(cin, isbn);
-			cout << "Unesite broj clanske karte: ";
+			string brojClanskeKarte;
+			cout << "Unesite broj clanske karte za uklanjanje: ";
 			getline(cin, brojClanskeKarte);
-			if (baza.UkloniPosudbu(isbn,brojClanskeKarte)) {
-				cout << "Posudba uklonjena." << endl;
-			}
-			else {
-				cout << "GRESKA PRI UKLANJANJU POSUDBE!!!" << endl;
-			}
+			baza.ObrisiClana(brojClanskeKarte);
 			break;
 		}
 		case 9: {
+			string isbn, brojClanskeKarte;
+			cout << "Unesite broj clanske karte: ";
+			getline(cin, brojClanskeKarte);
+			cout << "Unesite ISBN knjige: ";
+			getline(cin, isbn);
+			baza.UkloniPosudbu(brojClanskeKarte,isbn);
+			break;
+		}
+		case 10: {
 			baza.PrikaziSveKnjige();
 			break;
 		}
-		case 10:
+		case 11:
 		{
 			baza.PrikaziSveClanove();
 			break;
 		}
-		case 11: {
+		case 12: {
 			cout << "DOVIDJENJE!" << endl;
 			break;
 		}
@@ -160,6 +149,6 @@ int main() {
 			break;
 		}
 		}
-	}while (izbor != 11);
+	}while (izbor != 12);
 	
 }
