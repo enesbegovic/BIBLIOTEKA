@@ -1,8 +1,8 @@
 #include <iostream>
 #include "Baza.h"
 using namespace std;
-Baza::Baza() {
-	sqlite3_open("BIBLIOTEKA.db", &db);
+Baza::Baza(string putanjaBaze) {
+	sqlite3_open(putanjaBaze.c_str(), &db);
 	sqlite3_exec(db, "PRAGMA foreign_keys=ON;", nullptr, nullptr, nullptr);
 }
 Baza::~Baza() {
@@ -69,6 +69,7 @@ void Baza::PostaviInfoBiblioteke(string Naziv, string Adresa) {
 	}
 	sqlite3_finalize(stmtProvjera);
 	if (count > 0) {
+		cout << "GRESKA PRI POSTAVLJANJU INFORMACIJA O BIBLIOTECI-NAZIV I ADRESA VEC POSTOJE" << endl;
 		return;
 	}
 	sqlite3_stmt* stmt;
@@ -110,6 +111,22 @@ void Baza::PrikaziInfoBiblioteke() {
 	}
 	sqlite3_finalize(stmt);
 }
+int Baza::BrojInfo() {
+	sqlite3_stmt* stmt;
+	string sql =
+		"SELECT COUNT (*) FROM InfoBiblioteke;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA INFORMACIJA:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	int count = 0;
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+	}
+	sqlite3_finalize(stmt);
+	return count;
+}
 void Baza::DodajKnjigu(string naslov, string autor, string isbn) {
 	sqlite3_stmt* stmtProvjera;
 	int count = 0;
@@ -126,6 +143,7 @@ void Baza::DodajKnjigu(string naslov, string autor, string isbn) {
 	}
 	sqlite3_finalize(stmtProvjera);
 	if (count > 0) {
+		cout << "GRESKA PRI DODAVANJU KNJIGE-KNJIGA VEC POSTOJI" << endl;
 		return;
 	}
 	sqlite3_stmt* stmt;
@@ -205,6 +223,22 @@ void Baza::PrikaziSveKnjige() {
 		cout << "---" << endl;
 	}
 	sqlite3_finalize(stmt);
+}
+int Baza::BrojKnjiga() {
+	sqlite3_stmt* stmt;
+	string sql =
+		"SELECT COUNT (*) FROM Knjige;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA KNJIGA:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	int count = 0;
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+	}
+	sqlite3_finalize(stmt);
+	return count;
 }
 void Baza::DodajClana(string imePrezime, string brojClanskeKartice) {
 	sqlite3_stmt* stmtProvjera;
@@ -299,6 +333,22 @@ void Baza::PrikaziSveClanove() {
 		cout << "---" << endl;
 	}
 	sqlite3_finalize(stmt);
+}
+int Baza::BrojClanova() {
+	sqlite3_stmt* stmt;
+	string sql =
+		"SELECT COUNT (*) FROM Clanovi;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA CLANOVA" << endl;
+		return -1;
+	}
+	int count = 0;
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+	}
+	sqlite3_finalize(stmt);
+	return count;
 }
 void Baza::PosudiKnjigu(string Clanska, string isbn, string DatumPosudbe) {
 	sqlite3_stmt* stmtClan;
@@ -467,6 +517,22 @@ void Baza::PregledPosudbi() {
 	}
 	sqlite3_finalize(stmt);
 }
+int Baza::BrojPosudbi() {
+	sqlite3_stmt* stmt;
+	string sql =
+		"SELECT COUNT (*) FROM Posudbe;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA POSUDBI:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	int count = 0;
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt, 0);
+	}
+	sqlite3_finalize(stmt);
+	return count;
+}
 void Baza::UkloniPosudbu(string Clanska, string isbn) {
 	sqlite3_stmt* stmtClan;
 	int ClanID=0;
@@ -579,7 +645,7 @@ void Baza::DodajClanaDodajPosudbu(string ImePrezime, string Clanska, string isbn
 	sqlite3_stmt* stmtPosudbe;
 	int count = 0;
 	string ProvjeraPosudbe =
-		"SELECT COUNT (*) FROM Posudbe WHERE ClanID=? AND KnjigaID=?;";
+		"SELECT COUNT (*) FROM Posudbe WHERE ClanID=? AND KnjigaID=? AND DatumPosudbe=?;";
 	int rc2 = sqlite3_prepare_v2(db, ProvjeraPosudbe.c_str(), -1, &stmtPosudbe, nullptr);
 	if (rc2 != SQLITE_OK) {
 		cout << "GRESKA PRI PRIPREMI PROVJERE POSUDBI:" << sqlite3_errmsg(db) << endl;
@@ -588,6 +654,7 @@ void Baza::DodajClanaDodajPosudbu(string ImePrezime, string Clanska, string isbn
 	}
 	sqlite3_bind_int(stmtPosudbe, 1, ClanID);
 	sqlite3_bind_int(stmtPosudbe, 2, KnjigaID);
+	sqlite3_bind_text(stmtPosudbe, 3, DatumPosudbe.c_str(), -1, SQLITE_TRANSIENT);
 	if (sqlite3_step(stmtPosudbe) == SQLITE_ROW) {
 		count = sqlite3_column_int(stmtPosudbe, 0);
 	}
