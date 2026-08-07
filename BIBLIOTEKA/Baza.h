@@ -22,6 +22,7 @@ public:
 	int BrojClanova();
 	void PosudiKnjigu(string Clanska, string isbn,string DatumPosudbe);
 	void VratiKnjigu(string Clanska, string isbn, string DatumVracanja);
+	int StatusPosudbe(string Clanska,string isbn);
 	void PregledPosudbi();
 	int BrojPosudbi();
 	void UkloniPosudbu(string Clanska, string isbn);

@@ -485,6 +485,28 @@ void Baza::VratiKnjigu(string Clanska, string isbn, string DatumVracanja) {
 	}
 	cout << "KNJIGA USPJESNO VRACENA" << endl;
 }
+int Baza::StatusPosudbe(string Clanska,string isbn) {
+	sqlite3_stmt* stmt;
+	string sql =
+		"SELECT Posudbe.Vracena "
+		"FROM Posudbe "
+		"JOIN Clanovi ON Posudbe.ClanID=Clanovi.ID "
+		"JOIN Knjige ON Posudbe.KnjigaID=Knjige.ID "
+		"WHERE Clanovi.BrojClanskeKartice=? AND Knjige.ISBN=?;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA STATUSA POSUDBE:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	sqlite3_bind_text(stmt, 1, Clanska.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, isbn.c_str(), -1, SQLITE_TRANSIENT);
+	int status = -1;
+	if (sqlite3_step(stmt) == SQLITE_ROW) {
+		status = sqlite3_column_int(stmt, 0);
+	}
+	sqlite3_finalize(stmt);
+	return status;
+}
 void Baza::PregledPosudbi() {
 	sqlite3_stmt* stmt;
 	string sql =

@@ -165,6 +165,15 @@ TEST(BazaTest, DodajClanaDodajPosudbuDuplaPosudbaProvjeraBrojaClanovaBrojaPosudb
 	EXPECT_EQ(testBaza.BrojClanova(), 1);
 	EXPECT_EQ(testBaza.BrojPosudbi(), 1);
 }
+TEST(BazaTest, DodajStatusPosudbeProvjeriVrijednostStatusa) {
+	Baza testBaza(":memory:");
+	testBaza.KreirajTabele();
+	testBaza.DodajKnjigu("Knjiga1", "Autor1", "123456");
+	testBaza.DodajClana("Clan1", "654321");
+	testBaza.PosudiKnjigu("654321", "123456", "2026-08-07");
+	testBaza.VratiKnjigu("654321", "123456", "2026-08-21");
+	EXPECT_EQ(testBaza.StatusPosudbe("654321", "123456"), 1);
+}
 TEST(BazaTest, DodajInformacijeBibilotekeProvjeriBrojInformacija) {
 	Baza testBaza(":memory:");
 	testBaza.KreirajTabele();
