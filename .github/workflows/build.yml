@@ -29,6 +29,16 @@ jobs:
       - name: Pokreni testove
         shell: pwsh
         run: |
-          $vstest = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Recurse -Filter "vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $vstest = Get-ChildItem -Path "C:\Program Files","C:\Program Files (x86)" -Recurse -Filter "vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $vstest) {
+            Write-Error "vstest.console.exe nije pronadjen na disku."
+            exit 1
+          }
+          Write-Host "Pronadjeno: $($vstest.FullName)"
           $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . | Where-Object { $_.FullName -match "Release" } | Select-Object -First 1
+          if (-not $dll) {
+            Write-Error "Test DLL nije pronadjen."
+            exit 1
+          }
+          Write-Host "Test DLL: $($dll.FullName)"
           & $vstest.FullName /Platform:x64 /Logger:trx $dll.FullName
