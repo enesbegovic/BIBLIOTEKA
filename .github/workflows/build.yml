@@ -29,20 +29,14 @@ jobs:
       - name: Pokreni testove
         shell: pwsh
         run: |
-          $vstest = Get-ChildItem -Path "C:\Program Files","C:\Program Files (x86)" -Recurse -Filter "vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $vstest) {
-            Write-Error "vstest.console.exe nije pronadjen na disku."
+          Write-Host "--- Sadrzaj x64 foldera (sve ekstenzije) ---"
+          Get-ChildItem -Recurse -Path . -Include "*.exe","*.dll" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+
+          $testExe = Get-ChildItem -Recurse -Path . -Filter "*.exe" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "Testovi" } | Select-Object -First 1
+          if ($testExe) {
+            Write-Host "Pokrecem direktno: $($testExe.FullName)"
+            & $testExe.FullName
+          } else {
+            Write-Error "Nije pronadjen ni .exe ni .dll test fajl."
             exit 1
           }
-          Write-Host "Pronadjeno: $($vstest.FullName)"
-
-          Write-Host "--- Svi DLL fajlovi u repo-u ---"
-          Get-ChildItem -Recurse -Filter "*.dll" -Path . | ForEach-Object { Write-Host $_.FullName }
-
-          $dll = Get-ChildItem -Recurse -Filter "*.dll" -Path . | Where-Object { $_.Name -match "Testovi" } | Select-Object -First 1
-          if (-not $dll) {
-            Write-Error "Test DLL nije pronadjen."
-            exit 1
-          }
-          Write-Host "Test DLL: $($dll.FullName)"
-          & $vstest.FullName /Platform:x64 /Logger:trx $dll.FullName
