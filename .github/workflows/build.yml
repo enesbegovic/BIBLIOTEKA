@@ -17,8 +17,14 @@ jobs:
       - name: Podesi MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Build solution (sa restore)
-        run: msbuild BIBLIOTEKA.slnx /p:Configuration=Release /p:Platform=x64 -restore
+      - name: Instaliraj NuGet alat
+        uses: nuget/setup-nuget@v2
+
+      - name: NuGet restore (test projekat)
+        run: nuget restore BIBLIOTEKA_Testovi\BIBLIOTEKA_Testovi.vcxproj -PackagesDirectory packages
+
+      - name: Build solution
+        run: msbuild BIBLIOTEKA.slnx /p:Configuration=Release /p:Platform=x64
 
       - name: Pokreni testove
         run: |
