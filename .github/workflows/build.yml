@@ -35,7 +35,11 @@ jobs:
             exit 1
           }
           Write-Host "Pronadjeno: $($vstest.FullName)"
-          $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . | Where-Object { $_.FullName -match "Release" } | Select-Object -First 1
+
+          Write-Host "--- Svi DLL fajlovi u repo-u ---"
+          Get-ChildItem -Recurse -Filter "*.dll" -Path . | ForEach-Object { Write-Host $_.FullName }
+
+          $dll = Get-ChildItem -Recurse -Filter "*.dll" -Path . | Where-Object { $_.Name -match "Testovi" } | Select-Object -First 1
           if (-not $dll) {
             Write-Error "Test DLL nije pronadjen."
             exit 1
