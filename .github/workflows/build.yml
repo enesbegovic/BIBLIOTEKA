@@ -1,0 +1,34 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+
+      - name: Podesi MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Instaliraj NuGet alat
+        uses: nuget/setup-nuget@v2
+
+      - name: NuGet restore (test projekat)
+        run: nuget restore BIBLIOTEKA_Testovi\BIBLIOTEKA_Testovi.vcxproj -PackagesDirectory packages
+
+      - name: Build solution
+        run: msbuild BIBLIOTEKA.slnx /p:Configuration=Release /p:Platform=x64
+
+      - name: Pokreni testove
+        run: |
+          $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . |
+            Where-Object { $_.FullName -match "Release" } |
+            Select-Object -First 1
+          vstest.console.exe /Platform:x64 /Logger:trx $dll.FullName
