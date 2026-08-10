@@ -27,8 +27,8 @@ jobs:
         run: msbuild BIBLIOTEKA.slnx /p:Configuration=Release /p:Platform=x64
 
       - name: Pokreni testove
+        shell: pwsh
         run: |
-          $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . |
-            Where-Object { $_.FullName -match "Release" } |
-            Select-Object -First 1
-          vstest.console.exe /Platform:x64 /Logger:trx $dll.FullName
+          $vstest = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Recurse -Filter "vstest.console.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . | Where-Object { $_.FullName -match "Release" } | Select-Object -First 1
+          & $vstest.FullName /Platform:x64 /Logger:trx $dll.FullName
