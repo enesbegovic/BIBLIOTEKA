@@ -27,8 +27,16 @@ jobs:
         run: msbuild BIBLIOTEKA.slnx /p:Configuration=Release /p:Platform=x64
 
       - name: Pokreni testove
+        shell: pwsh
         run: |
-          $dll = Get-ChildItem -Recurse -Filter "*Testovi*.dll" -Path . |
-            Where-Object { $_.FullName -match "Release" } |
-            Select-Object -First 1
-          vstest.console.exe /Platform:x64 /Logger:trx $dll.FullName
+          Write-Host "--- Sadrzaj x64 foldera (sve ekstenzije) ---"
+          Get-ChildItem -Recurse -Path . -Include "*.exe","*.dll" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+
+          $testExe = Get-ChildItem -Recurse -Path . -Filter "*.exe" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "Testovi" } | Select-Object -First 1
+          if ($testExe) {
+            Write-Host "Pokrecem direktno: $($testExe.FullName)"
+            & $testExe.FullName
+          } else {
+            Write-Error "Nije pronadjen ni .exe ni .dll test fajl."
+            exit 1
+          }

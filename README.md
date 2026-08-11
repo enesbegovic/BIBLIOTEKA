@@ -1,5 +1,7 @@
 # BIBLIOTEKA
 
+![Build and Test](https://github.com/enesbegovic/BIBLIOTEKA/actions/workflows/build.yml/badge.svg)
+
 Konzolna C++ aplikacija za upravljanje bibliotekom (knjige, clanovi, posudbe), sa SQLite bazom podataka. Sav rad sa bazom ide preko prepared statements.
 
 ## Tehnologije
@@ -66,3 +68,13 @@ Konzolna C++ aplikacija za upravljanje bibliotekom (knjige, clanovi, posudbe), s
 1. Otvoriti `.slnx` fajl u Visual Studio-u
 2. Build (Debug/x64)
 3. Pokrenuti - baza (`BIBLIOTEKA.db`) se automatski kreira pri prvom pokretanju ako ne postoji
+
+## Testiranje
+
+Projekat sadrži 22 jedinična testa (Google Test) koji pokrivaju rad sa Knjigama, Članovima, Posudbama i informacijama o biblioteci, uključujući provjere statusa posudbe i validaciju duplikata.
+
+Testovi se nalaze u `BIBLIOTEKA_Testovi` projektu i mogu se pokrenuti kroz Visual Studio Test Explorer (Test → Run All Tests).
+
+## CI/CD
+
+Svaki push na `master` granu automatski pokreće build i sve testove preko GitHub Actions (vidi `.github/workflows/build.yml`).
