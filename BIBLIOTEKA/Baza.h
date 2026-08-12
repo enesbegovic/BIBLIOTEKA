@@ -1,7 +1,7 @@
 #pragma once
 #include "sqlite3.h"
 #include <string>
-#include "StmtGuard.h"
+#include "StmtPtr.h"
 using namespace std;
 class Baza {
 	sqlite3* db;
