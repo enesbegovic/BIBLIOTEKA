@@ -2,10 +2,18 @@
 #include "sqlite3.h"
 #include <string>
 #include "StmtPtr.h"
+#include <vector>
 using namespace std;
+struct Knjiga {
+	int ID;
+	string Nasol;
+	string Autor;
+	string ISBN;
+};
 class Baza {
 	sqlite3* db;
 public:
+	std::vector<Knjiga>UzmiSveKnjige();
 	Baza(string putanjaBaze = "BIBLIOTEKA.db");
 	~Baza();
 	void KreirajTabele();

@@ -3,7 +3,7 @@
 #include "Baza.h"
 using namespace std;
 int main() {
-	Baza baza;
+	Baza baza("C:\\Users\\enesb\\source\\repos\\BIBLIOTEKA\\BIBLIOTEKA.db");
 	baza.KreirajTabele();
 	baza.PostaviInfoBiblioteke("GRADSKA BIBLIOTEKA MOSTAR", "BULEVAR BR.77");
 	baza.PrikaziInfoBiblioteke();

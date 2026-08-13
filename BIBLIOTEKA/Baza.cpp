@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Baza.h"
+#include <vector>
 using namespace std;
 Baza::Baza(string putanjaBaze) {
 	sqlite3_open(putanjaBaze.c_str(), &db);
@@ -707,4 +708,25 @@ void Baza::DodajClanaDodajPosudbu(string ImePrezime, string Clanska, string isbn
 	}
 	IzvrsiUpit("COMMIT;", "GRESKA PRI COMMIT-u");
 	cout << "TRANSAKCIJA USPJESNA-USPJESNO DODANI CLAN I POSUDBA" << endl;
+}
+std::vector<Knjiga>Baza::UzmiSveKnjige() {
+	std::vector<Knjiga>rezultat;
+	sqlite3_stmt* rawStmt;
+	string sql =
+		"SELECT * FROM Knjige;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA KNJIGA:" << sqlite3_errmsg(db) << endl;
+		return rezultat;
+	}
+	StmtPtr stmt(rawStmt);
+	while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		Knjiga k;
+		k.ID = sqlite3_column_int(stmt.get(), 0);
+		k.Nasol = (const char*)sqlite3_column_text(stmt.get(), 1);
+		k.Autor = (const char*)sqlite3_column_text(stmt.get(), 2);
+		k.ISBN = (const char*)sqlite3_column_text(stmt.get(), 3);
+		rezultat.push_back(k);
+	}
+	return rezultat;
 }

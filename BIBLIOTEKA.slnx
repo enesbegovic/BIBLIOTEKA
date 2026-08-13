@@ -4,5 +4,6 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="BIBLIOTEKA/BIBLIOTEKA.vcxproj" Id="c5cb92d3-2371-427d-8d2e-6107f37f30a8" />
+  <Project Path="BIBLIOTEKA_Server/BIBLIOTEKA_Server.vcxproj" Id="51b87823-8f6e-4ab4-9bf2-2f4ee6b62136" />
   <Project Path="BIBLIOTEKA_Testovi/BIBLIOTEKA_Testovi.vcxproj" Id="6a318fd4-5972-43d3-aa49-e1c48c39dbc6" />
 </Solution>
