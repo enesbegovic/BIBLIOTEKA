@@ -723,10 +723,58 @@ std::vector<Knjiga>Baza::UzmiSveKnjige() {
 	while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
 		Knjiga k;
 		k.ID = sqlite3_column_int(stmt.get(), 0);
-		k.Nasol = (const char*)sqlite3_column_text(stmt.get(), 1);
+		k.Naslov = (const char*)sqlite3_column_text(stmt.get(), 1);
 		k.Autor = (const char*)sqlite3_column_text(stmt.get(), 2);
 		k.ISBN = (const char*)sqlite3_column_text(stmt.get(), 3);
 		rezultat.push_back(k);
+	}
+	return rezultat;
+}
+std::vector<Clanovi>Baza::UzmiSveClanove() {
+	std::vector<Clanovi>rezultat;
+	sqlite3_stmt* rawStmt;
+	string sql =
+		"SELECT * FROM Clanovi;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA CLANOVA:" << sqlite3_errmsg(db) << endl;
+		return rezultat;
+	}
+	StmtPtr stmt(rawStmt);
+	while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		Clanovi c;
+		c.ID = sqlite3_column_int(stmt.get(), 0);
+		c.ImePrezime = (const char*)sqlite3_column_text(stmt.get(), 1);
+		c.BrojClanskeKartice = (const char*)sqlite3_column_text(stmt.get(), 2);
+		rezultat.push_back(c);
+	}
+	return rezultat;
+}
+std::vector<Posudbe>Baza::UzmiSvePosudbe() {
+	std::vector<Posudbe>rezultat;
+	sqlite3_stmt* rawStmt;
+	string sql =
+		"SELECT Clanovi.ImePrezime, Clanovi.BrojClanskeKartice, Knjige.Naslov, Posudbe.DatumPosudbe, "
+		"CASE WHEN Vracena=1 THEN 'Da' ELSE 'Ne' END AS Vracena, "
+		"CASE WHEN DatumVracanja IS NULL THEN '---' ELSE DatumVracanja END AS DatumVracanja "
+		"FROM Posudbe "
+		"JOIN Clanovi ON Posudbe.ClanID=Clanovi.ID "
+		"JOIN Knjige ON Posudbe.KnjigaID=Knjige.ID;";
+	int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr);
+	if (rc != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA CLANOVA:" << sqlite3_errmsg(db) << endl;
+		return rezultat;
+	}
+	StmtPtr stmt(rawStmt);
+	while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		Posudbe p;
+		p.ImeClana = (const char*)sqlite3_column_text(stmt.get(), 0);
+		p.BrojClanske= (const char*)sqlite3_column_text(stmt.get(), 1);
+		p.NaslovKnjige= (const char*)sqlite3_column_text(stmt.get(), 2);
+		p.DatumPosudbe= (const char*)sqlite3_column_text(stmt.get(), 3);
+		p.Vracena= (const char*)sqlite3_column_text(stmt.get(), 4);
+		p.DatumVracanja= (const char*)sqlite3_column_text(stmt.get(), 5);
+		rezultat.push_back(p);
 	}
 	return rezultat;
 }

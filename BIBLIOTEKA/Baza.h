@@ -6,14 +6,29 @@
 using namespace std;
 struct Knjiga {
 	int ID;
-	string Nasol;
+	string Naslov;
 	string Autor;
 	string ISBN;
+};
+struct Clanovi {
+	int ID;
+	string ImePrezime;
+	string BrojClanskeKartice;
+};
+struct Posudbe {
+	string ImeClana;
+	string BrojClanske;
+	string NaslovKnjige;
+	string DatumPosudbe;
+	string Vracena;
+	string DatumVracanja;
 };
 class Baza {
 	sqlite3* db;
 public:
 	std::vector<Knjiga>UzmiSveKnjige();
+	std::vector<Clanovi>UzmiSveClanove();
+	std::vector<Posudbe>UzmiSvePosudbe();
 	Baza(string putanjaBaze = "BIBLIOTEKA.db");
 	~Baza();
 	void KreirajTabele();
