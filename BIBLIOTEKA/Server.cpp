@@ -183,6 +183,30 @@ int main() {
 			res.set_content(Greska.dump(4), "application/json");
 		}
 		});
+	server.Get("/knjige/autor/:autor", [&baza](const httplib::Request& req, httplib::Response& res) {
+			string Autor = req.path_params.at("autor");
+			std::vector<Knjiga>knjige = baza.UzmiSveKnjige();
+			json rezultat = json::array();
+			for (const auto& k : knjige) {
+				if (k.Autor == Autor) {
+					json jk;
+					jk["ID"] = k.ID;
+					jk["Naslov"] = k.Naslov;
+					jk["Autor"] = k.Autor;
+					jk["ISBN"] = k.ISBN;
+					rezultat.push_back(jk);
+				}
+			}
+			if (!rezultat.empty()) {
+				res.set_content(rezultat.dump(4), "application/json");
+				return;
+			}
+			json Greska;
+			Greska["Greska"] = "Nepostoje Knjige Od Trazenog Autora";
+			res.status = 404;
+			res.set_content(Greska.dump(4), "application/json");
+		
+		});
 	std::cout << "Server pokrenut na http://localhost:8080" << std::endl;
 	server.listen("localhost", 8080);
 	return 0;
