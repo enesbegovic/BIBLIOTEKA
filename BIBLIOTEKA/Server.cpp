@@ -1,3 +1,4 @@
+#include <sodium.h>
 #include<httplib.h>
 #include<nlohmann/json.hpp>
 #include <iostream>
@@ -5,6 +6,10 @@
 using json = nlohmann::json;
 
 int main() {
+	if (sodium_init() < 0) {
+		std::cout << "libsodium nije inicijalizovan" << std::endl;
+		return 1;
+	}
 	Baza baza("BIBLIOTEKA.db");
 	httplib::Server server;
 	const std::string API_KEY = "tajni-kljuc-123";
@@ -15,7 +20,7 @@ int main() {
 
 			if (req.get_header_value("X-API-Key") != API_KEY) {
 				res.status = 401;
-				res.set_content("{\Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
+				res.set_content("{\"Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
 				return httplib::Server::HandlerResponse::Handled;
 			}
 			return httplib::Server::HandlerResponse::Unhandled;
