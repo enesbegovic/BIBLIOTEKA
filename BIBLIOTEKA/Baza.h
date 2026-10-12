@@ -51,4 +51,6 @@ public:
 	int BrojPosudbi();
 	void UkloniPosudbu(string Clanska, string isbn);
 	void DodajClanaDodajPosudbu(string ImePrezime, string Clanska, string isbn, string DatumPosudbe);
+	void DodajKorisnika(string UserName, string PasswordHash);
+	string UzmiHash(string UserName);
 };

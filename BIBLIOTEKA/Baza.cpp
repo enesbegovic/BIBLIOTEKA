@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include "Baza.h"
 #include <vector>
 using namespace std;
@@ -51,6 +52,13 @@ void Baza::KreirajTabele() {
 		"Naziv TEXT NOT NULL,"
 		"Adresa TEXT NOT NULL)";
 	IzvrsiUpit(KreirajInfoBiblioteke, "GRESKA PRI KREIRANJU TABELE INFO BIBLIOTEKE");
+
+	string KreirajKorisnike =
+		"CREATE TABLE IF NOT EXISTS Korisnici("
+		"ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+		"UserName TEXT NOT NULL UNIQUE,"
+		"PasswordHash TEXT NOT NULL);";
+	IzvrsiUpit(KreirajKorisnike, "GRESKA PRI KREIRANJU TABELE KORISNICI");
 }
 void Baza::PostaviInfoBiblioteke(string Naziv, string Adresa) {
 	sqlite3_stmt* rawStmtProvjera;
@@ -777,4 +785,35 @@ std::vector<Posudbe>Baza::UzmiSvePosudbe() {
 		rezultat.push_back(p);
 	}
 	return rezultat;
+}
+void Baza::DodajKorisnika(string UserName, string PasswordHash) {
+	sqlite3_stmt* rawStmt;
+	string sql =
+		"INSERT INTO Korisnici(UserName, PasswordHash) VALUES(?, ?);";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		throw std::runtime_error(sqlite3_errmsg(db));
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, UserName.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt.get(), 2, PasswordHash.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) != SQLITE_DONE) {
+		throw std::runtime_error("KORISNIK VEC POSTOJI ILI GRESKA PRI UPISU");
+	}
+	cout << "KORISNIK USPIJESNO DODAN" << endl;
+}
+string Baza::UzmiHash(string UserName) {
+	sqlite3_stmt* rawStmt;
+	string password = "";
+	string sql =
+		"SELECT PasswordHash FROM Korisnici WHERE UserName=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout<<"GRESKA PRI PRIPREMI UZIMANJA PASSWORD-a:"<<sqlite3_errmsg(db)<<endl;
+		return password;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, UserName.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		password = (const char*)sqlite3_column_text(stmt.get(), 0);
+	}
+	return password;
 }
