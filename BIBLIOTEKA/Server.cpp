@@ -5,8 +5,21 @@
 using json = nlohmann::json;
 
 int main() {
-	Baza baza("C:\\Users\\enesb\\source\\repos\\BIBLIOTEKA\\BIBLIOTEKA.db");
+	Baza baza("BIBLIOTEKA.db");
 	httplib::Server server;
+	const std::string API_KEY = "tajni-kljuc-123";
+	server.set_pre_routing_handler(
+		[API_KEY](const httplib::Request& req, httplib::Response& res) {
+			if (req.path == "/")
+				return httplib::Server::HandlerResponse::Unhandled;
+
+			if (req.get_header_value("X-API-Key") != API_KEY) {
+				res.status = 401;
+				res.set_content("{\Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
+				return httplib::Server::HandlerResponse::Handled;
+			}
+			return httplib::Server::HandlerResponse::Unhandled;
+		});
 	server.Get("/", [](const httplib::Request& req, httplib::Response& res) {
 		res.set_content("Server Radi!", "text/plain");
 		});
@@ -208,7 +221,7 @@ int main() {
 		
 		});
 	std::cout << "Server pokrenut na http://localhost:8080" << std::endl;
-	server.listen("localhost", 8080);
+	server.listen("0.0.0.0", 8080);
 	return 0;
 }
 
