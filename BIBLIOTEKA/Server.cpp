@@ -1,3 +1,4 @@
+#include <sodium.h>
 #include<httplib.h>
 #include<nlohmann/json.hpp>
 #include <iostream>
@@ -5,23 +6,74 @@
 using json = nlohmann::json;
 
 int main() {
+	if (sodium_init() < 0) {
+		std::cout << "libsodium nije inicijalizovan" << std::endl;
+		return 1;
+	}
 	Baza baza("BIBLIOTEKA.db");
+	baza.KreirajTabele();
 	httplib::Server server;
 	const std::string API_KEY = "tajni-kljuc-123";
 	server.set_pre_routing_handler(
 		[API_KEY](const httplib::Request& req, httplib::Response& res) {
-			if (req.path == "/")
+			if (req.path == "/"||req.path=="/register"||req.path=="/login")
 				return httplib::Server::HandlerResponse::Unhandled;
 
 			if (req.get_header_value("X-API-Key") != API_KEY) {
 				res.status = 401;
-				res.set_content("{\Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
+				res.set_content("{\"Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
 				return httplib::Server::HandlerResponse::Handled;
 			}
 			return httplib::Server::HandlerResponse::Unhandled;
 		});
 	server.Get("/", [](const httplib::Request& req, httplib::Response& res) {
 		res.set_content("Server Radi!", "text/plain");
+		});
+	server.Post("/register", [&baza](const httplib::Request& req, httplib::Response& res) {
+		try {
+			json tijelo = json::parse(req.body);
+			string Username = tijelo.at("username");
+			string password = tijelo.at("password");
+			char hash[crypto_pwhash_STRBYTES];
+			if (crypto_pwhash_str(hash, password.c_str(), password.size(), crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+				res.status = 500;
+				res.set_content("{\"Greska\":\"Hashiranje nije uspijelo\"}", "application/json");
+			}
+			baza.DodajKorisnika(Username, hash);
+			json Poruka;
+			Poruka["Poruka"] = "Korisnik Uspijesno Dodan";
+			res.status = 201;
+			res.set_content(Poruka.dump(4), "application/json");
+		}
+		catch (const std::exception& e) {
+			json Greska;
+			Greska["Greska"] = e.what();
+			res.status = 400;
+			res.set_content(Greska.dump(4), "application/json");
+		}
+		});
+	server.Post("/login", [&baza](const httplib::Request& req, httplib::Response& res) {
+		try {
+			json tijelo = json::parse(req.body);
+			string username = tijelo.at("username");
+			string password = tijelo.at("password");
+			string hash = baza.UzmiHash(username);
+			if (hash.empty() || crypto_pwhash_str_verify(hash.c_str(), password.c_str(), password.size()) != 0) {
+				res.status = 401;
+				res.set_content("{\"Greska\":\"Pogresno Korisnicko Ime ili Pogresna Lozinka\"}", "application/json");
+				return;
+			}
+			json Poruka;
+			Poruka["Poruka"] = "Prijava Uspijesna";
+			res.status = 200;
+			res.set_content(Poruka.dump(4), "application/json");
+		}
+		catch (const std::exception& e) {
+			json Greska;
+			Greska["Greska"] = e.what();
+			res.status = 400;
+			res.set_content(Greska.dump(4), "application/json");
+		}
 		});
 	server.Get("/knjige", [&baza](const httplib::Request& req, httplib::Response& res) {
 		std::vector<Knjiga>knjige = baza.UzmiSveKnjige();
