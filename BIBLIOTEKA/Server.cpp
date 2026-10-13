@@ -1,3 +1,5 @@
+#include <map>
+#include <chrono>
 #include <sodium.h>
 #include<httplib.h>
 #include<nlohmann/json.hpp>
@@ -11,20 +13,30 @@ int main() {
 		return 1;
 	}
 	Baza baza("BIBLIOTEKA.db");
+	struct Sesija {
+		string username;
+		std::chrono::steady_clock::time_point istice;
+	};
+	std::map<string, Sesija>sesije;
 	baza.KreirajTabele();
 	httplib::Server server;
-	const std::string API_KEY = "tajni-kljuc-123";
 	server.set_pre_routing_handler(
-		[API_KEY](const httplib::Request& req, httplib::Response& res) {
+		[&sesije](const httplib::Request& req, httplib::Response& res) {
 			if (req.path == "/"||req.path=="/register"||req.path=="/login")
 				return httplib::Server::HandlerResponse::Unhandled;
-
-			if (req.get_header_value("X-API-Key") != API_KEY) {
-				res.status = 401;
-				res.set_content("{\"Greska\":\"Neispravan ili nedostajuci API kljuc\"}", "application/json");
-				return httplib::Server::HandlerResponse::Handled;
+            
+			string auth = req.get_header_value("Authorization");
+			string Prefiks = "Bearer ";
+			if (auth.rfind(Prefiks, 0) == 0) {
+				string token = auth.substr(Prefiks.size());
+				auto it = sesije.find(token);
+				if (it != sesije.end() && it->second.istice > std::chrono::steady_clock::now()) {
+					return httplib::Server::HandlerResponse::Unhandled;
+				}
 			}
-			return httplib::Server::HandlerResponse::Unhandled;
+			res.status = 401;
+			res.set_content("{\"Greska\":\"Nevazeci ili istekao token\"}", "application/json");
+			return httplib::Server::HandlerResponse::Handled;
 		});
 	server.Get("/", [](const httplib::Request& req, httplib::Response& res) {
 		res.set_content("Server Radi!", "text/plain");
@@ -52,7 +64,7 @@ int main() {
 			res.set_content(Greska.dump(4), "application/json");
 		}
 		});
-	server.Post("/login", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/login", [&baza,&sesije](const httplib::Request& req, httplib::Response& res) {
 		try {
 			json tijelo = json::parse(req.body);
 			string username = tijelo.at("username");
@@ -63,8 +75,13 @@ int main() {
 				res.set_content("{\"Greska\":\"Pogresno Korisnicko Ime ili Pogresna Lozinka\"}", "application/json");
 				return;
 			}
+			unsigned char bajtovi[32];
+			randombytes_buf(bajtovi, sizeof bajtovi);
+			char token[sodium_base64_ENCODED_LEN(sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING)];
+			sodium_bin2base64(token, sizeof token, bajtovi, sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING);
+			sesije[token] = { username, std::chrono::steady_clock::now() + std::chrono::hours(1) };
 			json Poruka;
-			Poruka["Poruka"] = "Prijava Uspijesna";
+			Poruka["Token"] = token;
 			res.status = 200;
 			res.set_content(Poruka.dump(4), "application/json");
 		}
