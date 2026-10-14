@@ -16,6 +16,7 @@ int main() {
 	Baza baza("BIBLIOTEKA.db");
 	struct Sesija {
 		string username;
+		string uloga;
 		std::chrono::steady_clock::time_point istice;
 	};
 	std::map<string, Sesija>sesije;
@@ -34,6 +35,13 @@ int main() {
 				std::lock_guard<std::mutex>lock(sesijeMutex);
 				auto it = sesije.find(token);
 				if (it != sesije.end() && it->second.istice > std::chrono::steady_clock::now()) {
+					bool mijenja = (req.method == "POST" || req.method == "PUT" || req.method == "DELETE")
+						&& req.path != "/logout";
+					if (mijenja && it->second.uloga != "admin") {
+						res.status = 403;
+						res.set_content("{\"Greska\":\"Nemate dozvolu za ovu akciju\"}", "application/json");
+						return httplib::Server::HandlerResponse::Handled;
+					}
 					return httplib::Server::HandlerResponse::Unhandled;
 				}
 			}
@@ -82,9 +90,10 @@ int main() {
 			randombytes_buf(bajtovi, sizeof bajtovi);
 			char token[sodium_base64_ENCODED_LEN(sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING)];
 			sodium_bin2base64(token, sizeof token, bajtovi, sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING);
+			string uloga = baza.UzmiUlogu(username);
 			{
 				std::lock_guard<mutex>lock(sesijeMutex);
-				sesije[token] = { username, std::chrono::steady_clock::now() + std::chrono::hours(1) };
+				sesije[token] = { username, uloga, std::chrono::steady_clock::now() + std::chrono::hours(1) };
 			}
 			json Poruka;
 			Poruka["Token"] = token;
