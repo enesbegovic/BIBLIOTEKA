@@ -1,3 +1,4 @@
+#include <mutex>
 #include <map>
 #include <chrono>
 #include <sodium.h>
@@ -18,10 +19,11 @@ int main() {
 		std::chrono::steady_clock::time_point istice;
 	};
 	std::map<string, Sesija>sesije;
+	std::mutex sesijeMutex;
 	baza.KreirajTabele();
 	httplib::Server server;
 	server.set_pre_routing_handler(
-		[&sesije](const httplib::Request& req, httplib::Response& res) {
+		[&sesije,&sesijeMutex](const httplib::Request& req, httplib::Response& res) {
 			if (req.path == "/"||req.path=="/register"||req.path=="/login")
 				return httplib::Server::HandlerResponse::Unhandled;
             
@@ -29,6 +31,7 @@ int main() {
 			string Prefiks = "Bearer ";
 			if (auth.rfind(Prefiks, 0) == 0) {
 				string token = auth.substr(Prefiks.size());
+				std::lock_guard<std::mutex>lock(sesijeMutex);
 				auto it = sesije.find(token);
 				if (it != sesije.end() && it->second.istice > std::chrono::steady_clock::now()) {
 					return httplib::Server::HandlerResponse::Unhandled;
@@ -64,7 +67,7 @@ int main() {
 			res.set_content(Greska.dump(4), "application/json");
 		}
 		});
-	server.Post("/login", [&baza,&sesije](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/login", [&baza,&sesije,&sesijeMutex](const httplib::Request& req, httplib::Response& res) {
 		try {
 			json tijelo = json::parse(req.body);
 			string username = tijelo.at("username");
@@ -79,7 +82,10 @@ int main() {
 			randombytes_buf(bajtovi, sizeof bajtovi);
 			char token[sodium_base64_ENCODED_LEN(sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING)];
 			sodium_bin2base64(token, sizeof token, bajtovi, sizeof bajtovi, sodium_base64_VARIANT_URLSAFE_NO_PADDING);
-			sesije[token] = { username, std::chrono::steady_clock::now() + std::chrono::hours(1) };
+			{
+				std::lock_guard<mutex>lock(sesijeMutex);
+				sesije[token] = { username, std::chrono::steady_clock::now() + std::chrono::hours(1) };
+			}
 			json Poruka;
 			Poruka["Token"] = token;
 			res.status = 200;
@@ -91,6 +97,17 @@ int main() {
 			res.status = 400;
 			res.set_content(Greska.dump(4), "application/json");
 		}
+		});
+	server.Post("/logout", [&sesije, &sesijeMutex](const httplib::Request& req, httplib::Response& res) {
+		string auth = req.get_header_value("Authorization");
+		string Prefiks = "Bearer ";
+		string token = auth.substr(Prefiks.size());
+		{
+			std::lock_guard<mutex>lock(sesijeMutex);
+			sesije.erase(token);
+		}
+		res.status = 200;
+		res.set_content("{\"Poruka\":\"Odjava uspijesna\"}", "application/json");
 		});
 	server.Get("/knjige", [&baza](const httplib::Request& req, httplib::Response& res) {
 		std::vector<Knjiga>knjige = baza.UzmiSveKnjige();
