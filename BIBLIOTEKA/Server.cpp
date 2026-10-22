@@ -61,6 +61,7 @@ int main() {
 			if (crypto_pwhash_str(hash, password.c_str(), password.size(), crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
 				res.status = 500;
 				res.set_content("{\"Greska\":\"Hashiranje nije uspijelo\"}", "application/json");
+				return;
 			}
 			baza.DodajKorisnika(Username, hash);
 			json Poruka;
