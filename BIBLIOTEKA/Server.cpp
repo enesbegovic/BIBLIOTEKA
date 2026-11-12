@@ -48,7 +48,8 @@ int main() {
 				if (it != sesije.end() && it->second.istice > std::chrono::steady_clock::now()) {
 					bool mijenja = (req.method == "POST" || req.method == "PUT" || req.method == "DELETE")
 						&& req.path != "/logout";
-					if (mijenja && it->second.uloga != "admin") {
+					bool osjetljivo = (req.path.rfind("/clanovi",0)==0||req.path.rfind("/posudbe",0)==0);
+					if ((mijenja||osjetljivo) && it->second.uloga != "admin") {
 						res.status = 403;
 						res.set_content("{\"Greska\":\"Nemate dozvolu za ovu akciju\"}", "application/json");
 						return httplib::Server::HandlerResponse::Handled;
@@ -299,7 +300,7 @@ int main() {
 		res.status = 404;
 		res.set_content(Greska.dump(4), "application/json");
 		});
-	server.Get("/Clanovi", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Get("/clanovi", [&baza](const httplib::Request& req, httplib::Response& res) {
 		std::vector<Clanovi>clanovi = baza.UzmiSveClanove();
 		std::cout << "Broj Clanova Vracen Iz Baze:" << clanovi.size() << endl;
 		json rezultat = json::array();
@@ -312,7 +313,7 @@ int main() {
 		}
 		res.set_content(rezultat.dump(4), "application/json");
 		});
-	server.Post("/Clanovi", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/clanovi", [&baza](const httplib::Request& req, httplib::Response& res) {
 		try {
 			json tijelo = json::parse(req.body);
 
@@ -333,7 +334,7 @@ int main() {
 			res.set_content(Greska.dump(4), "application/json");
 		}
 		});
-	server.Delete("/Clanovi/:BrojClanskeKartice", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Delete("/clanovi/:BrojClanskeKartice", [&baza](const httplib::Request& req, httplib::Response& res) {
 		string BrojClanskeKartice = req.path_params.at("BrojClanskeKartice");
 		baza.ObrisiClana(BrojClanskeKartice);
 		json Odgovor;
@@ -358,7 +359,7 @@ int main() {
 		res.status = 404;
 		res.set_content(Greska.dump(4), "application/json");
 		});
-	server.Get("/Posudbe", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Get("/posudbe", [&baza](const httplib::Request& req, httplib::Response& res) {
 		std::vector<Posudbe>posudbe = baza.UzmiSvePosudbe();
 		std::cout << "Broj posudbi vracen iz baze:" << posudbe.size() << endl;
 		json rezultat = json::array();
@@ -374,7 +375,7 @@ int main() {
 		}
 		res.set_content(rezultat.dump(4), "application/json");
 		});
-	server.Post("/Posudbe", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/posudbe", [&baza](const httplib::Request& req, httplib::Response& res) {
 		try {
 			json tijelo = json::parse(req.body);
 			string Clanska = tijelo.at("ClanskaKartica");
@@ -391,7 +392,7 @@ int main() {
 			res.set_content(Greska.dump(4), "application/json");
 		}
 		});
-	server.Post("/Posudbe/vrati", [&baza](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/posudbe/vrati", [&baza](const httplib::Request& req, httplib::Response& res) {
 		try {
 			json tijelo = json::parse(req.body);
 			string Clanska = tijelo.at("ClanskaKartica");
