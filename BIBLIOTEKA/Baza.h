@@ -53,6 +53,7 @@ public:
 	void DodajClanaDodajPosudbu(string ImePrezime, string Clanska, string isbn, string DatumPosudbe);
 	void DodajKorisnika(string UserName, string PasswordHash);
 	string UzmiHash(string UserName);
-	void PostaviUlogu(string UserName, string Uloga);
+	bool PostaviUlogu(string UserName, string Uloga);
 	string UzmiUlogu(string UserName);
+	int BrojAdmina(string Uloga);
 };

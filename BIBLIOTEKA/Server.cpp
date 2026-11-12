@@ -27,6 +27,7 @@ int main() {
 	std::map<string, Sesija>sesije;
 	std::map<string, Pokusaji>pokusaji;
 	std::mutex sesijeMutex;
+	std::mutex ulogeMutex;
 	baza.KreirajTabele();
 	httplib::SSLServer server("cert.pem","key.pem");
 	if (!server.is_valid()) {
