@@ -819,22 +819,23 @@ string Baza::UzmiHash(string UserName) {
 	}
 	return password;
 }
-void Baza::PostaviUlogu(string UserName, string Uloga) {
+bool Baza::PostaviUlogu(string UserName, string Uloga) {
 	sqlite3_stmt* rawStmt;
 	string sql =
 		"UPDATE Korisnici SET Uloga=? WHERE UserName=?;";
 	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
 		cout << "GRESKA PRI PRIPREMI POSTAVLJANJA ULOGE KORISNIK-u:" << sqlite3_errmsg(db) << endl;
-		return;
+		return false;
 	}
 	StmtPtr stmt(rawStmt);
 	sqlite3_bind_text(stmt.get(), 1, Uloga.c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt.get(), 2, UserName.c_str(), -1, SQLITE_TRANSIENT);
 	if (sqlite3_step(stmt.get()) != SQLITE_DONE) {
 		cout << "GRESKA PRI POSTAVLJANJU ULOGE KORISNIKU:" << sqlite3_errmsg(db) << endl;
-		return;
+		return false;
 	}
 	cout << "USPIJESNO POSTAVLJENA ULOGA KORISNIKU" << endl;
+	return true;
 }
 string Baza::UzmiUlogu(string UserName) {
 	sqlite3_stmt* rawStmt;
@@ -851,4 +852,20 @@ string Baza::UzmiUlogu(string UserName) {
 		uloga = (const char*)sqlite3_column_text(stmt.get(), 0);
 	}
 	return uloga;
+}
+int Baza::BrojAdmina(string Uloga) {
+	sqlite3_stmt* rawStmt;
+	int Broj = 0;
+	string sql =
+		"SELECT COUNT (*) FROM Korisnici WHERE Uloga=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI BROJANJA ADMINA-a:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, Uloga.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		Broj = sqlite3_column_int(stmt.get(), 0);
+	}
+	return Broj;
 }
