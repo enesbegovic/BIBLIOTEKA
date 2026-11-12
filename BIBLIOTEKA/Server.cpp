@@ -68,7 +68,7 @@ int main() {
 			return;
 		}
 		string NovaUloga = tijelo["uloga"];
-		if (NovaUloga != "admin" || NovaUloga != "korisnik") {
+		if (NovaUloga != "admin" && NovaUloga != "korisnik") {
 			res.status = 400;
 			res.set_content("{\"Greska\":\"Nedozvoljena uloga\"}", "application/json");
 			return;
@@ -92,7 +92,7 @@ int main() {
 		string StaraUloga = baza.UzmiUlogu(meta);
 		if (StaraUloga.empty()) {
 			res.status = 404;
-			res.set_content("{\"Greska\:\"Korisnik ne postoji\"}", "application/json");
+			res.set_content("{\"Greska\":\"Korisnik ne postoji\"}", "application/json");
 			return;
 		}
 		if (StaraUloga == NovaUloga) {
