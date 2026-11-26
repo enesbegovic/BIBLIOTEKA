@@ -8,22 +8,34 @@
 #include <iostream>
 #include "Baza.h"
 using json = nlohmann::json;
-
+struct Sesija {
+	string username;
+	string uloga;
+	std::chrono::steady_clock::time_point istice;
+};
+struct Pokusaji {
+	int brojPokusaja = 0;
+	std::chrono::steady_clock::time_point BlokadaDo{};
+};
+string PozivalacIzTokena(const httplib::Request& req, std::map<string, Sesija>& sesije, std::mutex& sesijeMutex) {
+	string auth = req.get_header_value("Authorization");
+	string Prefiks = "Bearer ";
+	if (auth.rfind(Prefiks, 0) != 0) {
+		return "";
+	}
+	string token = auth.substr(Prefiks.size());
+	auto it = sesije.find(token);
+	if (it == sesije.end()) {
+		return "";
+	}
+	return it->second.username;
+}
 int main() {
 	if (sodium_init() < 0) {
 		std::cout << "libsodium nije inicijalizovan" << std::endl;
 		return 1;
 	}
 	Baza baza("BIBLIOTEKA.db");
-	struct Sesija {
-		string username;
-		string uloga;
-		std::chrono::steady_clock::time_point istice;
-	};
-	struct Pokusaji {
-		int brojPokusaja = 0;
-		std::chrono::steady_clock::time_point BlokadaDo{};
-	};
 	std::map<string, Sesija>sesije;
 	std::map<string, Pokusaji>pokusaji;
 	std::mutex sesijeMutex;
@@ -132,6 +144,40 @@ int main() {
 			res.status = 200;
 			res.set_content("{\"Poruka\":\"Uloga uspijesno azurirana\"}", "application/json");
 		}
+		});
+	server.Put("/korisnici/:username/clan", [&baza, &ulogeMutex](const httplib::Request& req, httplib::Response& res) {
+		json tijelo = json::parse(req.body, nullptr, false);
+		if (tijelo.is_discarded() || !tijelo.is_object() || !tijelo.contains("brojclanskekartice") || !tijelo["brojclanskekartice"].is_string()) {
+			res.status = 400;
+			res.set_content("{\"Greska\":\"Nevalidno tijelo\"}", "application/json");
+			return;
+		}
+		string ClanskaKartica = tijelo["brojclanskekartice"];
+		string Meta = req.path_params.at("username");
+		std::lock_guard<mutex>lockuloge(ulogeMutex);
+		if (baza.UzmiUlogu(Meta).empty()) {
+			res.status = 404;
+			res.set_content("{\"Greska\":\"Korsinik ne postoji\"}", "application/json");
+			return;
+		}
+		int ClanID = baza.ClanPostoji(ClanskaKartica);
+		if (ClanID == -1) {
+			res.status = 404;
+			res.set_content("{\"Greska\":\"Clan ne postoji\"}", "application/json");
+			return;
+		}
+		if (baza.ClanImaRacun(ClanID)) {
+			res.status = 409;
+			res.set_content("{\"Greska\":\"Clan vec ima racun\"}", "application/json");
+			return;
+		}
+		if (!baza.PoveziClanaSaRacunom(Meta, ClanskaKartica)) {
+			res.status = 500;
+			res.set_content("{\"Greska\":\"Neuspijesno povezivanje clana i racuna\"}", "application/json");
+			return;
+		}
+		res.status = 200;
+		res.set_content("{\"Poruka\":\"Uspijesno povezani clan i racun\"}", "application/json");
 		});
 	server.Get("/", [](const httplib::Request& req, httplib::Response& res) {
 		res.set_content("Server Radi!", "text/plain");
@@ -366,8 +412,31 @@ int main() {
 		for (const auto& p : posudbe) {
 			json jp;
 			jp["Ime i Prezime Clana"] = p.ImeClana;
-			jp["Broj Clanske Kartice:"] = p.BrojClanske;
-			jp["Naslov Knjige:"] = p.NaslovKnjige;
+			jp["Broj Clanske Kartice"] = p.BrojClanske;
+			jp["Naslov Knjige"] = p.NaslovKnjige;
+			jp["Datum Posudbe"] = p.DatumPosudbe;
+			jp["Vracena"] = p.Vracena;
+			jp["Datum Vracanja"] = p.DatumVracanja;
+			rezultat.push_back(jp);
+		}
+		res.set_content(rezultat.dump(4), "application/json");
+		});
+	server.Get("/moje-posudbe", [&baza,&sesije,&sesijeMutex](const httplib::Request& req, httplib::Response& res) {
+		auto UserName = PozivalacIzTokena(req, sesije, sesijeMutex);
+		int ClanID = baza.UzmiClanID(UserName);
+		if (ClanID == -1) {
+			res.status = 403;
+			res.set_content("{\"Greska\":\"Racun nije povezan sa clanom\"}", "application/json");
+			return;
+		}
+		std::vector<Posudbe>posudbe = baza.UzmiMojePosudbe(ClanID);
+		std::cout << "Broj posudbi vracenih iz baze:" << posudbe.size() << std::endl;
+		json rezultat = json::array();
+		for (const auto& p : posudbe) {
+			json jp;
+			jp["Ime i Prezime Clana"] = p.ImeClana;
+			jp["Broj Clanske Kartice"] = p.BrojClanske;
+			jp["Naslov Knjige"] = p.NaslovKnjige;
 			jp["Datum Posudbe"] = p.DatumPosudbe;
 			jp["Vracena"] = p.Vracena;
 			jp["Datum Vracanja"] = p.DatumVracanja;
