@@ -58,7 +58,8 @@ void Baza::KreirajTabele() {
 		"ID INTEGER PRIMARY KEY AUTOINCREMENT,"
 		"UserName TEXT NOT NULL UNIQUE,"
 		"PasswordHash TEXT NOT NULL,"
-		"Uloga TEXT NOT NULL DEFAULT 'korisnik');";
+		"Uloga TEXT NOT NULL DEFAULT 'korisnik',"
+		"ClanID INTEGER UNIQUE REFERENCES Clanovi(ID));";
 	sqlite3_exec(db, "ALTER TABLE Korisnici ADD COLUMN Uloga TEXT NOT NULL DEFAULT 'korisnik';", nullptr, nullptr, nullptr);
 	IzvrsiUpit(KreirajKorisnike, "GRESKA PRI KREIRANJU TABELE KORISNICI");
 }
@@ -868,4 +869,122 @@ int Baza::BrojAdmina(string Uloga) {
 		Broj = sqlite3_column_int(stmt.get(), 0);
 	}
 	return Broj;
+}
+int Baza::UzmiClanID(string username) {
+	sqlite3_stmt* rawStmt;
+	int ClanID = -1;
+	string sql =
+		"SELECT ClanID FROM Korisnici WHERE UserName=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA ClanID:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, username.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		if (sqlite3_column_type(stmt.get(), 0) != SQLITE_NULL) {
+			ClanID = sqlite3_column_int(stmt.get(), 0);
+		}
+	}
+	return ClanID;
+}
+int Baza::ClanPostoji(string clanska) {
+	sqlite3_stmt* rawStmt;
+	int ID = -1;
+	string sql =
+		"SELECT ID FROM Clanovi WHERE BrojClanskeKartice=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA ID-a CLANA:" << sqlite3_errmsg(db) << endl;
+		return -1;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, clanska.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		ID = sqlite3_column_int(stmt.get(), 0);
+	}
+	return ID;
+}
+bool Baza::ClanImaRacun(int ClanID) {
+	sqlite3_stmt* rawStmt;
+	int count = 0;
+	string sql =
+		"SELECT COUNT (*) FROM Korisnici WHERE ClanID=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PROVJERI RACUNA CLANA:" << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_int(stmt.get(), 1, ClanID);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		count = sqlite3_column_int(stmt.get(), 0);
+	}
+	if (count > 0) {
+		return true;
+	}
+	return false;
+}
+bool Baza::PoveziClanaSaRacunom(string username, string clanska) {
+	sqlite3_stmt* rawStmt;
+	int ClanID = -1;
+	string sql =
+		"SELECT ID FROM Clanovi WHERE BrojClanskeKartice=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI UZIMANJA ID-a CLANA:" << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_text(stmt.get(), 1, clanska.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		ClanID = sqlite3_column_int(stmt.get(), 0);
+	}
+	if (ClanID == -1) {
+		return false;
+	}
+	sqlite3_stmt* rawStmt1;
+	string sql1 =
+		"UPDATE Korisnici SET ClanID=? WHERE UserName=?;";
+	if (sqlite3_prepare_v2(db, sql1.c_str(), -1, &rawStmt1, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIPREMI POVEZIVANJA CLANA I RACUNA:" << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+	StmtPtr stmt1(rawStmt1);
+	sqlite3_bind_int(stmt1.get(), 1, ClanID);
+	sqlite3_bind_text(stmt1.get(), 2, username.c_str(), -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(stmt1.get()) != SQLITE_DONE) {
+		cout << "GRESKA PRI POVEZIVANJU CLANA I RACUNA:" << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+	if (sqlite3_changes(db) == 0) {
+		return false;
+	}
+	return true;
+}
+std::vector<Posudbe>Baza::UzmiMojePosudbe(int ClanID) {
+	std::vector<Posudbe>rezultat;
+	sqlite3_stmt* rawStmt;
+	string sql =
+		"SELECT Clanovi.ImePrezime, Clanovi.BrojClanskeKartice, Knjige.Naslov, Posudbe.DatumPosudbe, "
+		"CASE WHEN Vracena=1 THEN 'Da' ELSE 'Ne' END AS Vracena, "
+		"CASE WHEN DatumVracanja IS NULL THEN '---' ELSE DatumVracanja END AS DatumVracanja "
+		"FROM Posudbe "
+		"JOIN Clanovi ON Posudbe.ClanID=Clanovi.ID "
+		"JOIN Knjige ON Posudbe.KnjigaID=Knjige.ID "
+		"WHERE Posudbe.ClanID=?;";
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &rawStmt, nullptr) != SQLITE_OK) {
+		cout << "GRESKA PRI PRIKAZU MOJIH POSUDBI:" << sqlite3_errmsg(db) << endl;
+		return rezultat;
+	}
+	StmtPtr stmt(rawStmt);
+	sqlite3_bind_int(stmt.get(), 1, ClanID);
+	while (sqlite3_step(stmt.get()) == SQLITE_ROW) {
+		Posudbe p;
+		p.ImeClana = (const char*)sqlite3_column_text(stmt.get(), 0);
+		p.BrojClanske = (const char*)sqlite3_column_text(stmt.get(), 1);
+		p.NaslovKnjige = (const char*)sqlite3_column_text(stmt.get(), 2);
+		p.DatumPosudbe = (const char*)sqlite3_column_text(stmt.get(), 3);
+		p.Vracena = (const char*)sqlite3_column_text(stmt.get(), 4);
+		p.DatumVracanja = (const char*)sqlite3_column_text(stmt.get(), 5);
+		rezultat.push_back(p);
+	}
+	return rezultat;
 }

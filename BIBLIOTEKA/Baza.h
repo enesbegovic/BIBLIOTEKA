@@ -29,6 +29,7 @@ public:
 	std::vector<Knjiga>UzmiSveKnjige();
 	std::vector<Clanovi>UzmiSveClanove();
 	std::vector<Posudbe>UzmiSvePosudbe();
+	std::vector<Posudbe>UzmiMojePosudbe(int ClanID);
 	Baza(string putanjaBaze = "BIBLIOTEKA.db");
 	~Baza();
 	void KreirajTabele();
@@ -56,4 +57,9 @@ public:
 	bool PostaviUlogu(string UserName, string Uloga);
 	string UzmiUlogu(string UserName);
 	int BrojAdmina(string Uloga);
+	int UzmiClanID(string username);
+	int ClanPostoji(string clasnka);
+	bool ClanImaRacun(int ClanID);
+	bool PoveziClanaSaRacunom(string username, string clanska);
+	
 };
